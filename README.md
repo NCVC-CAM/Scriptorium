@@ -14,4 +14,4 @@ Visual Studio 2015 Solution
 Yoshiro NOSE / NIT, Maizuru College (KOSEN)
 
 ## License
-()
+"Scriptorium" is under [BSD license (3-clause BSD License)] 
