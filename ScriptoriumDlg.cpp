@@ -363,6 +363,12 @@ void CScriptoriumDlg::OnButtonRun()
 		AfxMessageBox("出力ﾌｧｲﾙ を入力してください。");
 		m_ctEditOUT.SetFocus();
 	}
+	//Program Files直下に保存されているか　チェック
+	else if (strncmp(m_strOutFileName, "C:\\Program Files", 15) == 0) {
+		AfxMessageBox("出力ﾌｧｲﾙはC:\\Program Files以外のフォルダを選択して下さい。");
+		m_ctEditOUT.SetFocus();
+	}
+
 	else {
 		dwAttri = ::GetFileAttributes(m_strOutFileName);
 		if ( dwAttri != 0xFFFFFFFF ) {
