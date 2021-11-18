@@ -5,6 +5,9 @@
 #include "Scriptorium.h"
 #include "ScriptoriumDlg.h"
 #include "atlbase.h"
+#include "io.h"
+
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -314,6 +317,24 @@ void CScriptoriumDlg::OnButtonRun()
 	DWORD	dwNGFlag = FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM;
 	DWORD	dwAttri;
 
+	TCHAR    szDrive[_MAX_DRIVE],
+		szDir[_MAX_DIR],
+		szFileName[_MAX_FNAME],
+		szExt[_MAX_EXT];
+
+	_tsplitpath_s(m_strOutFileName,
+		szDrive, _MAX_DRIVE, szDir, _MAX_DIR,
+		szFileName, _MAX_FNAME, szExt, _MAX_EXT);
+
+	CString strFullPath(szDrive);    
+	strFullPath += szDir;
+
+	DWORD ErrCode;
+
+	// 書き込み権限のフォルダかチェック
+	HANDLE hFile = CreateFile(m_strOutFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL,
+		CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+
 	// ｽｸﾘﾌﾟﾄﾌｧｲﾙ チェック
 	if( m_strScript.IsEmpty() ){
 		AfxMessageBox("ｽｸﾘﾌﾟﾄﾌｧｲﾙ を入力してください。");
@@ -363,12 +384,19 @@ void CScriptoriumDlg::OnButtonRun()
 		AfxMessageBox("出力ﾌｧｲﾙ を入力してください。");
 		m_ctEditOUT.SetFocus();
 	}
-	//Program Files直下に保存されているか　チェック
-	else if (strncmp(m_strOutFileName, "C:\\Program Files", 15) == 0) {
-		AfxMessageBox("出力ﾌｧｲﾙはC:\\Program Files以外のフォルダを選択して下さい。");
-		m_ctEditOUT.SetFocus();
-	}
+	
+	// 出力ファイルが書き込み権限のフォルダ内かチェック
+	else if (hFile == INVALID_HANDLE_VALUE) {
+		ErrCode = GetLastError();
 
+		// 5:アクセス拒否 
+		if (ErrCode == 5) {
+			AfxMessageBox("出力ﾌｧｲﾙは書き込み権限可能なフォルダを選択して下さい。");
+			m_ctEditOUT.SetFocus();
+		}
+	}
+	
+	
 	else {
 		dwAttri = ::GetFileAttributes(m_strOutFileName);
 		if ( dwAttri != 0xFFFFFFFF ) {
