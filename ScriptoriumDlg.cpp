@@ -389,7 +389,7 @@ void CScriptoriumDlg::OnButtonRun()
 	else if (hFile == INVALID_HANDLE_VALUE) {
 		ErrCode = GetLastError();
 
-		// 5:アクセス拒否 
+		// 5:アクセス拒否
 		if (ErrCode == 5) {
 			AfxMessageBox("出力ﾌｧｲﾙは書き込み権限可能なフォルダを選択して下さい。");
 			m_ctEditOUT.SetFocus();
