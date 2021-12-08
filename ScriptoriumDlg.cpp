@@ -276,6 +276,23 @@ void CScriptoriumDlg::OnButtonRefsc()
 	CString	strResult( FileReference(strFullPath, TRUE, IDS_SCRIPT_FILTER) );
 	if ( !strResult.IsEmpty() ) {
 		m_strScript = strResult;	// ﾌﾙﾊﾟｽGET!
+		//スクリプト拡張子 Python or Perl判定
+		char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
+		_splitpath(strFullPath, chrDrive, chrDir, chrFile, chrExt);
+
+		//Pythonの場合
+		if (_stricmp(chrExt , ".py" ) == 0) {
+
+		}
+		//Perlの場合
+		else if (_stricmp(chrExt, ".pl") == 0) {
+
+		}
+		//どちらでも無い場合
+		else {
+			AfxMessageBox("スクリプトファイルはPerlかPython形式を選択して下さい。");
+		}
+
 		PathSetDlgItemPath(m_strScript, IDC_STATIC_SF, m_strComboSF);
 	}
 }
@@ -294,6 +311,7 @@ void CScriptoriumDlg::OnButtonRefin()
 	// OutFile について
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
 	_splitpath(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
+
 	m_strOutFileName  = lstrcat(lstrcat(chrDrive, chrDir), chrFile) + m_strEditSuffix + chrExt;
 	PathSetDlgItemPath(m_strOutFileName, IDC_STATIC_OUT, m_strEditOUT);	
 //	UpdateData(FALSE);
