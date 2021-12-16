@@ -278,7 +278,7 @@ void CScriptoriumDlg::OnButtonRefsc()
 		m_strScript = strResult;	// ﾌﾙﾊﾟｽGET!
 		//スクリプト拡張子 Python or Perl判定
 		char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-		_splitpath(strFullPath, chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(strFullPath, chrDrive, chrDir, chrFile, chrExt);
 
 		//Pythonの場合
 		if (_stricmp(chrExt , ".py" ) == 0) {
@@ -310,7 +310,7 @@ void CScriptoriumDlg::OnButtonRefin()
 
 	// OutFile について
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-	_splitpath(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
 
 	m_strOutFileName  = lstrcat(lstrcat(chrDrive, chrDir), chrFile) + m_strEditSuffix + chrExt;
 	PathSetDlgItemPath(m_strOutFileName, IDC_STATIC_OUT, m_strEditOUT);	
@@ -352,7 +352,8 @@ void CScriptoriumDlg::OnButtonRun()
 	// 書き込み権限のフォルダかチェック
 	HANDLE hFile = CreateFile(m_strOutFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL,
 		CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-
+	CloseHandle(hFile);
+	
 	// ｽｸﾘﾌﾟﾄﾌｧｲﾙ チェック
 	if( m_strScript.IsEmpty() ){
 		AfxMessageBox("ｽｸﾘﾌﾟﾄﾌｧｲﾙ を入力してください。");
@@ -431,7 +432,7 @@ void CScriptoriumDlg::OnButtonRun()
 				return;
 			}
 		}
-	
+
 		CString tmpStr;
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
@@ -501,7 +502,7 @@ LRESULT CScriptoriumDlg::StrWriteOK(WPARAM wParam, LPARAM lParam)
 		if(pMap){
 			char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
 			// In について
-			_splitpath(pMap, chrDrive, chrDir, chrFile, chrExt);
+			_splitpath_s(pMap, chrDrive, chrDir, chrFile, chrExt);
 			CString	strFile(chrFile);
 			m_strInFileName = pMap;
 			// Out について
@@ -531,7 +532,7 @@ LRESULT CScriptoriumDlg::DragOnControl(WPARAM wParam, LPARAM lParam)
 		break;
 	case IDC_STATIC_IN:
 		m_strInFileName = m_ct_STIN.m_strDragFile;
-		_splitpath(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
 		m_strOutFileName = lstrcat(chrDrive, lstrcat(chrDir, chrFile)) + m_strEditSuffix + chrExt;
 		PathSetDlgItemPath(m_strInFileName, IDC_STATIC_IN, m_strEditIN);
 		PathSetDlgItemPath(m_strOutFileName, IDC_STATIC_OUT, m_strEditOUT);
@@ -596,7 +597,7 @@ void CScriptoriumDlg::PathSetDlgItemPath
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
 
 	// Staticｺﾝﾄﾛｰﾙのﾊﾟｽ省略形
-	_splitpath(lpszFullPath, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(lpszFullPath, chrDrive, chrDir, chrFile, chrExt);
 	::PathSetDlgItemPath(m_hWnd, nID, lstrcat(chrDrive, chrDir));
 	// Editｺﾝﾄﾛｰﾙ(DDX CString)に対してﾌｧｲﾙ名
 	strEdit = lstrcat(chrFile, chrExt);
@@ -613,7 +614,7 @@ void CScriptoriumDlg::AddComboBox(void)
 	POSITION	addpos;
 	for ( POSITION pos = m_ltScript.GetHeadPosition(); pos; ) {
 		addpos = pos;
-		_splitpath(m_ltScript.GetNext(pos), chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(m_ltScript.GetNext(pos), chrDrive, chrDir, chrFile, chrExt);
 		m_cbxComboSF.SetItemDataPtr( m_cbxComboSF.AddString(lstrcat(chrFile, chrExt)), addpos );
 	}
 	if (!m_ltScript.IsEmpty()){
@@ -661,10 +662,10 @@ void CScriptoriumDlg::OnKillfocusComboSf()
 	// ｺﾝﾎﾞﾎﾞｯｸｽのｴﾃﾞｨｯﾄﾎﾞｯｸｽからﾌｫｰｶｽが外れたら
 	UpdateData();
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-	_splitpath(m_strComboSF, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(m_strComboSF, chrDrive, chrDir, chrFile, chrExt);
 	CString strDir(lstrcat(chrDrive, chrDir));
 	if ( strDir.IsEmpty() ){	// 入力されたﾌｧｲﾙ名にﾊﾟｽ情報がないとき
-		_splitpath(m_strScript, chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(m_strScript, chrDrive, chrDir, chrFile, chrExt);
 		m_strScript = lstrcat(chrDrive, chrDir) + m_strComboSF;
 	}else{
 		m_strScript = m_strComboSF;
@@ -677,10 +678,10 @@ void CScriptoriumDlg::OnKillfocusEditIn()
 	// 入力ﾌｧｲﾙのｴﾃﾞｨｯﾄﾎﾞｯｸｽからﾌｫｰｶｽが外れたら
 	UpdateData();
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-	_splitpath(m_strEditIN, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(m_strEditIN, chrDrive, chrDir, chrFile, chrExt);
 	CString strDir(lstrcat(chrDrive, chrDir));
 	if ( strDir.IsEmpty() ){	// 入力されたﾌｧｲﾙ名にﾊﾟｽ情報がないとき
-		_splitpath(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
 		m_strInFileName = lstrcat(chrDrive, chrDir) + m_strEditIN;
 	}else{
 		m_strInFileName = m_strEditIN;
@@ -693,10 +694,10 @@ void CScriptoriumDlg::OnKillfocusEditOut()
 	// 出力ﾌｧｲﾙのｴﾃﾞｨｯﾄﾎﾞｯｸｽからﾌｫｰｶｽが外れたら
 	UpdateData();
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-	_splitpath(m_strEditOUT, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(m_strEditOUT, chrDrive, chrDir, chrFile, chrExt);
 	CString strDir(lstrcat(chrDrive, chrDir));
 	if ( strDir.IsEmpty() ){
-		_splitpath(m_strOutFileName, chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(m_strOutFileName, chrDrive, chrDir, chrFile, chrExt);
 		m_strOutFileName = lstrcat(chrDrive, chrDir) + m_strEditOUT;
 	}else{
 		m_strOutFileName = m_strEditOUT;
@@ -710,7 +711,7 @@ void CScriptoriumDlg::OnKillfocusEditOut()
 CString FileReference(const CString& strInFile, BOOL bRead, UINT nFilterID)
 {
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-	_splitpath(strInFile, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(strInFile, chrDrive, chrDir, chrFile, chrExt);
 	CString strFile(lstrcat(chrFile, chrExt)),
 			strPath(lstrcat(chrDrive, chrDir)), strResult, strFilter, strAllFilter, strDefFilter;
 
