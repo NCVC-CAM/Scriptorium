@@ -276,22 +276,6 @@ void CScriptoriumDlg::OnButtonRefsc()
 	CString	strResult( FileReference(strFullPath, TRUE, IDS_SCRIPT_FILTER) );
 	if ( !strResult.IsEmpty() ) {
 		m_strScript = strResult;	// ﾌﾙﾊﾟｽGET!
-		//スクリプト拡張子 Python or Perl判定
-		char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-		_splitpath_s(strFullPath, chrDrive, chrDir, chrFile, chrExt);
-
-		//Pythonの場合
-		if (_stricmp(chrExt , ".py" ) == 0) {
-
-		}
-		//Perlの場合
-		else if (_stricmp(chrExt, ".pl") == 0) {
-
-		}
-		//どちらでも無い場合
-		else {
-			AfxMessageBox("スクリプトファイルはPerlかPython形式を選択して下さい。");
-		}
 
 		PathSetDlgItemPath(m_strScript, IDC_STATIC_SF, m_strComboSF);
 	}
@@ -352,7 +336,7 @@ void CScriptoriumDlg::OnButtonRun()
 	// 書き込み権限のフォルダかチェック
 	HANDLE hFile = CreateFile(m_strOutFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL,
 		CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-	CloseHandle(hFile);
+	
 	
 	// ｽｸﾘﾌﾟﾄﾌｧｲﾙ チェック
 	if( m_strScript.IsEmpty() ){
@@ -403,7 +387,6 @@ void CScriptoriumDlg::OnButtonRun()
 		AfxMessageBox("出力ﾌｧｲﾙ を入力してください。");
 		m_ctEditOUT.SetFocus();
 	}
-	
 	// 出力ファイルが書き込み権限のフォルダ内かチェック
 	else if (hFile == INVALID_HANDLE_VALUE) {
 		ErrCode = GetLastError();
@@ -411,12 +394,18 @@ void CScriptoriumDlg::OnButtonRun()
 		// 5:アクセス拒否
 		if (ErrCode == 5) {
 			AfxMessageBox("出力ﾌｧｲﾙは書き込み権限可能なフォルダを選択して下さい。");
-			m_ctEditOUT.SetFocus();
 		}
+		//書き込み権限チェック終了
+		CloseHandle(hFile);
+		m_ctEditOUT.SetFocus();
+
+
 	}
 	
 	
 	else {
+		//書き込み権限チェック終了
+		CloseHandle(hFile);
 		dwAttri = ::GetFileAttributes(m_strOutFileName);
 		if ( dwAttri != 0xFFFFFFFF ) {
 			// ファイルがあるとき
@@ -433,6 +422,8 @@ void CScriptoriumDlg::OnButtonRun()
 			}
 		}
 
+
+
 		CString tmpStr;
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
@@ -440,12 +431,29 @@ void CScriptoriumDlg::OnButtonRun()
 		si.cb = sizeof( si );								// 自分の領域を格納するメンバに入れる
 		si.dwFlags = STARTF_USESHOWWINDOW;
 		si.wShowWindow = SW_HIDE;
-		tmpStr = "perl \"" + m_strScript + "\" \"" + m_strInFileName + "\" \"" + m_strOutFileName + "\"";
-		if ( CreateProcess(NULL, (LPSTR)(LPCTSTR)tmpStr, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) != 0 ){
-			CloseHandle( pi.hThread );						// スレッドのハンドルは使わないのですぐ破棄
-			WaitForSingleObject( pi.hProcess, INFINITE );	// プロセスが終了するまでまつ
-			CloseHandle( pi.hProcess );						// もうプロセスのハンドルは使わないので破棄
+
+		//スクリプト拡張子 Python or Perl判定
+		char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
+		_splitpath_s(m_strScript, chrDrive, chrDir, chrFile, chrExt);
+
+		//Pythonの場合
+		if (_stricmp(chrExt, ".py") == 0) {
+
 		}
+		//Perlの場合
+		else if (_stricmp(chrExt, ".pl") == 0) {
+			tmpStr = "perl \"" + m_strScript + "\" \"" + m_strInFileName + "\" \"" + m_strOutFileName + "\"";
+			if (CreateProcess(NULL, (LPSTR)(LPCTSTR)tmpStr, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) != 0) {
+				CloseHandle(pi.hThread);						// スレッドのハンドルは使わないのですぐ破棄
+				WaitForSingleObject(pi.hProcess, INFINITE);	// プロセスが終了するまでまつ
+				CloseHandle(pi.hProcess);						// もうプロセスのハンドルは使わないので破棄
+			}
+		}
+		//どちらでも無い場合
+		else {
+			AfxMessageBox("スクリプトファイルはPerlかPython形式を選択して下さい。");
+		}
+		
 /*		
 		// デバッグ用
 		CString tmpStr = "perl \"" + m_strScript + "\" \"" + m_strInFileName + "\" \"" + m_strOutFileName + "\"";
