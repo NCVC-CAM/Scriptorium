@@ -336,6 +336,8 @@ void CScriptoriumDlg::OnButtonRun()
 	// 書き込み権限のフォルダかチェック
 	HANDLE hFile = CreateFile(m_strOutFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL,
 		CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	//チェック用ファイル削除
+	DeleteFile(m_strOutFileName);
 	
 	
 	// ｽｸﾘﾌﾟﾄﾌｧｲﾙ チェック
@@ -387,16 +389,12 @@ void CScriptoriumDlg::OnButtonRun()
 		AfxMessageBox("出力ﾌｧｲﾙ を入力してください。");
 		m_ctEditOUT.SetFocus();
 	}
-	// 出力ファイルが書き込み権限のフォルダ内かチェック
-	else if (hFile == INVALID_HANDLE_VALUE) {
-		ErrCode = GetLastError();
+	// 出力ファイルが書き込み権限のフォルダ内かチェック GetLastError() == 5:アクセス拒否
+	else if (hFile == INVALID_HANDLE_VALUE && GetLastError() == 5) {
 
-		// 5:アクセス拒否
-		if (ErrCode == 5) {
-			AfxMessageBox("出力ﾌｧｲﾙは書き込み権限可能なフォルダを選択して下さい。");
-		}
 		//書き込み権限チェック終了
 		CloseHandle(hFile);
+		AfxMessageBox("出力ﾌｧｲﾙは書き込み権限可能なフォルダを選択して下さい。");
 		m_ctEditOUT.SetFocus();
 
 
