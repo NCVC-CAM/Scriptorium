@@ -331,14 +331,6 @@ void CScriptoriumDlg::OnButtonRun()
 	CString strFullPath(szDrive);    
 	strFullPath += szDir;
 
-	DWORD ErrCode;
-
-	// 書き込み権限のフォルダかチェック
-	HANDLE hFile = CreateFile(m_strOutFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL,
-		CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-	//チェック用ファイル削除
-	DeleteFile(m_strOutFileName);
-	
 	
 	// ｽｸﾘﾌﾟﾄﾌｧｲﾙ チェック
 	if( m_strScript.IsEmpty() ){
@@ -389,21 +381,9 @@ void CScriptoriumDlg::OnButtonRun()
 		AfxMessageBox("出力ﾌｧｲﾙ を入力してください。");
 		m_ctEditOUT.SetFocus();
 	}
-	// 出力ファイルが書き込み権限のフォルダ内かチェック GetLastError() == 5:アクセス拒否
-	else if (hFile == INVALID_HANDLE_VALUE && GetLastError() == 5) {
-
-		//書き込み権限チェック終了
-		CloseHandle(hFile);
-		AfxMessageBox("出力ﾌｧｲﾙは書き込み権限可能なフォルダを選択して下さい。");
-		m_ctEditOUT.SetFocus();
-
-
-	}
-	
 	
 	else {
-		//書き込み権限チェック終了
-		CloseHandle(hFile);
+		
 		dwAttri = ::GetFileAttributes(m_strOutFileName);
 		if ( dwAttri != 0xFFFFFFFF ) {
 			// ファイルがあるとき
@@ -413,13 +393,34 @@ void CScriptoriumDlg::OnButtonRun()
 				m_ctEditOUT.SetSel(0,-1);
 				return;
 			}
+			
 			else if (AfxMessageBox(m_strOutFileName + " は既に存在します。\n上書きしますか?", MB_YESNO|MB_DEFBUTTON2) == IDNO){
 				m_ctEditOUT.SetFocus();
 				m_ctEditOUT.SetSel(0,-1);
 				return;
 			}
-		}
+			}
+		else {
+			// 書き込み権限のフォルダかチェック
+			HANDLE hFile = CreateFile(m_strOutFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL,
+				CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+			
+			// 出力ファイルが書き込み権限のフォルダ内かチェック GetLastError() == 5:アクセス拒否
+			if (hFile == INVALID_HANDLE_VALUE && GetLastError() == 5) {
 
+				//書き込み権限チェック終了
+				CloseHandle(hFile);
+				AfxMessageBox("出力ﾌｧｲﾙは書き込み権限可能なフォルダを選択して下さい。");
+				m_ctEditOUT.SetFocus();
+				return;
+			}
+
+			//チェック用ファイル削除
+			DeleteFile(m_strOutFileName);
+
+			//書き込み権限チェック終了
+			CloseHandle(hFile);
+		}
 
 
 		CString tmpStr;
