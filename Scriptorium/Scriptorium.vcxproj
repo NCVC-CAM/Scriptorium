@@ -217,7 +217,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\Debug\Scriptorium.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
@@ -246,6 +247,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CustomControl.cpp" />
+    <ClCompile Include="ScriptOption.cpp" />
+    <ClCompile Include="Scriptorium.cpp" />
+    <ClCompile Include="ScriptoriumDlg.cpp" />
+    <ClCompile Include="StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Scriptorium.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CustomControl.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="ScriptOption.h" />
+    <ClInclude Include="Scriptorium.h" />
+    <ClInclude Include="ScriptoriumDlg.h" />
+    <ClInclude Include="StdAfx.h" />
+  </ItemGroup>
+  <ItemGroup>
     <Image Include="res\icon1.ico" />
     <Image Include="res\Scriptorium.ico" />
   </ItemGroup>
@@ -257,24 +285,6 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\XPStyle.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Scriptorium\CustomControl.cpp" />
-    <ClCompile Include="Scriptorium\ScriptOption.cpp" />
-    <ClCompile Include="Scriptorium\Scriptorium.cpp" />
-    <ClCompile Include="Scriptorium\ScriptoriumDlg.cpp" />
-    <ClCompile Include="Scriptorium\StdAfx.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Scriptorium\CustomControl.h" />
-    <ClInclude Include="Scriptorium\resource.h" />
-    <ClInclude Include="Scriptorium\ScriptOption.h" />
-    <ClInclude Include="Scriptorium\Scriptorium.h" />
-    <ClInclude Include="Scriptorium\ScriptoriumDlg.h" />
-    <ClInclude Include="Scriptorium\StdAfx.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Scriptorium\Scriptorium.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
