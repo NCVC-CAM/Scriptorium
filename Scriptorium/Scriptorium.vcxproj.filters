@@ -15,6 +15,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Scriptorium.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="CustomControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -32,15 +40,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Scriptorium.rc">
-      <Filter>Source Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="CustomControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ScriptOption.h">
@@ -57,22 +60,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\icon1.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\Scriptorium.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
+    <None Include="Scriptorium.dsp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="res\XPStyle.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="res\Scriptorium.rc2">
-      <Filter>Resource Files</Filter>
-    </CustomBuild>
+    <ResourceCompile Include="Scriptorium.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -10,6 +10,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <sdkddkver.h>
 #define VC_EXTRALEAN		// Windows ヘッダーから殆ど使用されないスタッフを除外します。
 
 #include <afxwin.h>         // MFC のコアおよび標準コンポーネント
