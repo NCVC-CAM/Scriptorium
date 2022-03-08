@@ -8,7 +8,7 @@ Scriptorium300.lzh
 FMV-686NU + WindowsXp Pro SP1
 
 ## Usage
-Visual Studio 2015 Solution
+Microsoft Visual Studio Professional/Community 2022 
 
 ## Author
 Yoshiro NOSE / NIT, Maizuru College (KOSEN)
