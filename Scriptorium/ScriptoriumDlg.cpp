@@ -435,22 +435,26 @@ void CScriptoriumDlg::OnButtonRun()
 		char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
 		_splitpath_s(m_strScript, chrDrive, chrDir, chrFile, chrExt);
 
+		CString strEXE;										//判別拡張子格納
 		//Pythonの場合
 		if (_stricmp(chrExt, ".py") == 0) {
-
+			strEXE = "python";
 		}
 		//Perlの場合
 		else if (_stricmp(chrExt, ".pl") == 0) {
-			tmpStr = "perl \"" + m_strScript + "\" \"" + m_strInFileName + "\" \"" + m_strOutFileName + "\"";
+			strEXE = "perl";
+		}
+		//どちらでも無い場合
+		if(strEXE.IsEmpty()) {
+			AfxMessageBox("スクリプトファイルはPerlかPython形式を選択して下さい。");
+		}
+		else {
+			tmpStr = strEXE +" \"" + m_strScript + "\" \"" + m_strInFileName + "\" \"" + m_strOutFileName + "\"";
 			if (CreateProcess(NULL, (LPSTR)(LPCTSTR)tmpStr, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) != 0) {
 				CloseHandle(pi.hThread);						// スレッドのハンドルは使わないのですぐ破棄
 				WaitForSingleObject(pi.hProcess, INFINITE);	// プロセスが終了するまでまつ
 				CloseHandle(pi.hProcess);						// もうプロセスのハンドルは使わないので破棄
 			}
-		}
-		//どちらでも無い場合
-		else {
-			AfxMessageBox("スクリプトファイルはPerlかPython形式を選択して下さい。");
 		}
 		
 /*		
