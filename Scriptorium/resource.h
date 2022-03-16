@@ -4,7 +4,7 @@
 //
 #define IDR_MANIFEST                    1
 #define IDM_ABOUTBOX                    0x0010
-#define RT_MANIFEST                     24
+//#define RT_MANIFEST                     24
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
 #define IDD_SCRIPTORIUM_DIALOG          102

@@ -26,10 +26,10 @@ BOOL CScriptOption::InitInstance(void)
 	CString strEntryOpt;
 	CString strEntryPos;
 	CString strEntry;
-	static	ss_ChkDefault[] = {
+	static int	ss_ChkDefault[] = {
 		1, 0, 0, 1
 	};
-	static	ss_PosDefault[] = {
+	static int	ss_PosDefault[] = {
 		100, 100
 	};
 	//////////////////////////

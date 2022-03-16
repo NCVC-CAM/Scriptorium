@@ -5,6 +5,9 @@
 #include "Scriptorium.h"
 #include "ScriptoriumDlg.h"
 #include "atlbase.h"
+#include "io.h"
+
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -273,6 +276,7 @@ void CScriptoriumDlg::OnButtonRefsc()
 	CString	strResult( FileReference(strFullPath, TRUE, IDS_SCRIPT_FILTER) );
 	if ( !strResult.IsEmpty() ) {
 		m_strScript = strResult;	// ﾌﾙﾊﾟｽGET!
+
 		PathSetDlgItemPath(m_strScript, IDC_STATIC_SF, m_strComboSF);
 	}
 }
@@ -290,7 +294,8 @@ void CScriptoriumDlg::OnButtonRefin()
 
 	// OutFile について
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-	_splitpath(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
+
 	m_strOutFileName  = lstrcat(lstrcat(chrDrive, chrDir), chrFile) + m_strEditSuffix + chrExt;
 	PathSetDlgItemPath(m_strOutFileName, IDC_STATIC_OUT, m_strEditOUT);	
 //	UpdateData(FALSE);
@@ -314,6 +319,19 @@ void CScriptoriumDlg::OnButtonRun()
 	DWORD	dwNGFlag = FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM;
 	DWORD	dwAttri;
 
+	TCHAR    szDrive[_MAX_DRIVE],
+		szDir[_MAX_DIR],
+		szFileName[_MAX_FNAME],
+		szExt[_MAX_EXT];
+
+	_tsplitpath_s(m_strOutFileName,
+		szDrive, _MAX_DRIVE, szDir, _MAX_DIR,
+		szFileName, _MAX_FNAME, szExt, _MAX_EXT);
+
+	CString strFullPath(szDrive);    
+	strFullPath += szDir;
+
+	
 	// ｽｸﾘﾌﾟﾄﾌｧｲﾙ チェック
 	if( m_strScript.IsEmpty() ){
 		AfxMessageBox("ｽｸﾘﾌﾟﾄﾌｧｲﾙ を入力してください。");
@@ -363,7 +381,9 @@ void CScriptoriumDlg::OnButtonRun()
 		AfxMessageBox("出力ﾌｧｲﾙ を入力してください。");
 		m_ctEditOUT.SetFocus();
 	}
+	
 	else {
+		
 		dwAttri = ::GetFileAttributes(m_strOutFileName);
 		if ( dwAttri != 0xFFFFFFFF ) {
 			// ファイルがあるとき
@@ -373,13 +393,36 @@ void CScriptoriumDlg::OnButtonRun()
 				m_ctEditOUT.SetSel(0,-1);
 				return;
 			}
+			
 			else if (AfxMessageBox(m_strOutFileName + " は既に存在します。\n上書きしますか?", MB_YESNO|MB_DEFBUTTON2) == IDNO){
 				m_ctEditOUT.SetFocus();
 				m_ctEditOUT.SetSel(0,-1);
 				return;
 			}
+			}
+		else {
+			// 書き込み権限のフォルダかチェック
+			HANDLE hFile = CreateFile(m_strOutFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL,
+				CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+			
+			// 出力ファイルが書き込み権限のフォルダ内かチェック GetLastError() == 5:アクセス拒否
+			if (hFile == INVALID_HANDLE_VALUE && GetLastError() == 5) {
+
+				//書き込み権限チェック終了
+				CloseHandle(hFile);
+				AfxMessageBox("出力ﾌｧｲﾙは書き込み権限可能なフォルダを選択して下さい。");
+				m_ctEditOUT.SetFocus();
+				return;
+			}
+
+			//チェック用ファイル削除
+			DeleteFile(m_strOutFileName);
+
+			//書き込み権限チェック終了
+			CloseHandle(hFile);
 		}
-	
+
+
 		CString tmpStr;
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
@@ -387,12 +430,33 @@ void CScriptoriumDlg::OnButtonRun()
 		si.cb = sizeof( si );								// 自分の領域を格納するメンバに入れる
 		si.dwFlags = STARTF_USESHOWWINDOW;
 		si.wShowWindow = SW_HIDE;
-		tmpStr = "perl \"" + m_strScript + "\" \"" + m_strInFileName + "\" \"" + m_strOutFileName + "\"";
-		if ( CreateProcess(NULL, (LPSTR)(LPCTSTR)tmpStr, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) != 0 ){
-			CloseHandle( pi.hThread );						// スレッドのハンドルは使わないのですぐ破棄
-			WaitForSingleObject( pi.hProcess, INFINITE );	// プロセスが終了するまでまつ
-			CloseHandle( pi.hProcess );						// もうプロセスのハンドルは使わないので破棄
+
+		//スクリプト拡張子 Python or Perl判定
+		char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
+		_splitpath_s(m_strScript, chrDrive, chrDir, chrFile, chrExt);
+
+		CString strEXE;										//判別拡張子格納
+		//Pythonの場合
+		if (_stricmp(chrExt, ".py") == 0) {
+			strEXE = "python";
 		}
+		//Perlの場合
+		else if (_stricmp(chrExt, ".pl") == 0) {
+			strEXE = "perl";
+		}
+		//どちらでも無い場合
+		if(strEXE.IsEmpty()) {
+			AfxMessageBox("スクリプトファイルはPerlかPython形式を選択して下さい。");
+		}
+		else {
+			tmpStr = strEXE +" \"" + m_strScript + "\" \"" + m_strInFileName + "\" \"" + m_strOutFileName + "\"";
+			if (CreateProcess(NULL, (LPSTR)(LPCTSTR)tmpStr, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) != 0) {
+				CloseHandle(pi.hThread);						// スレッドのハンドルは使わないのですぐ破棄
+				WaitForSingleObject(pi.hProcess, INFINITE);	// プロセスが終了するまでまつ
+				CloseHandle(pi.hProcess);						// もうプロセスのハンドルは使わないので破棄
+			}
+		}
+		
 /*		
 		// デバッグ用
 		CString tmpStr = "perl \"" + m_strScript + "\" \"" + m_strInFileName + "\" \"" + m_strOutFileName + "\"";
@@ -449,7 +513,7 @@ LRESULT CScriptoriumDlg::StrWriteOK(WPARAM wParam, LPARAM lParam)
 		if(pMap){
 			char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
 			// In について
-			_splitpath(pMap, chrDrive, chrDir, chrFile, chrExt);
+			_splitpath_s(pMap, chrDrive, chrDir, chrFile, chrExt);
 			CString	strFile(chrFile);
 			m_strInFileName = pMap;
 			// Out について
@@ -479,7 +543,7 @@ LRESULT CScriptoriumDlg::DragOnControl(WPARAM wParam, LPARAM lParam)
 		break;
 	case IDC_STATIC_IN:
 		m_strInFileName = m_ct_STIN.m_strDragFile;
-		_splitpath(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
 		m_strOutFileName = lstrcat(chrDrive, lstrcat(chrDir, chrFile)) + m_strEditSuffix + chrExt;
 		PathSetDlgItemPath(m_strInFileName, IDC_STATIC_IN, m_strEditIN);
 		PathSetDlgItemPath(m_strOutFileName, IDC_STATIC_OUT, m_strEditOUT);
@@ -544,7 +608,7 @@ void CScriptoriumDlg::PathSetDlgItemPath
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
 
 	// Staticｺﾝﾄﾛｰﾙのﾊﾟｽ省略形
-	_splitpath(lpszFullPath, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(lpszFullPath, chrDrive, chrDir, chrFile, chrExt);
 	::PathSetDlgItemPath(m_hWnd, nID, lstrcat(chrDrive, chrDir));
 	// Editｺﾝﾄﾛｰﾙ(DDX CString)に対してﾌｧｲﾙ名
 	strEdit = lstrcat(chrFile, chrExt);
@@ -561,7 +625,7 @@ void CScriptoriumDlg::AddComboBox(void)
 	POSITION	addpos;
 	for ( POSITION pos = m_ltScript.GetHeadPosition(); pos; ) {
 		addpos = pos;
-		_splitpath(m_ltScript.GetNext(pos), chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(m_ltScript.GetNext(pos), chrDrive, chrDir, chrFile, chrExt);
 		m_cbxComboSF.SetItemDataPtr( m_cbxComboSF.AddString(lstrcat(chrFile, chrExt)), addpos );
 	}
 	if (!m_ltScript.IsEmpty()){
@@ -609,10 +673,10 @@ void CScriptoriumDlg::OnKillfocusComboSf()
 	// ｺﾝﾎﾞﾎﾞｯｸｽのｴﾃﾞｨｯﾄﾎﾞｯｸｽからﾌｫｰｶｽが外れたら
 	UpdateData();
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-	_splitpath(m_strComboSF, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(m_strComboSF, chrDrive, chrDir, chrFile, chrExt);
 	CString strDir(lstrcat(chrDrive, chrDir));
 	if ( strDir.IsEmpty() ){	// 入力されたﾌｧｲﾙ名にﾊﾟｽ情報がないとき
-		_splitpath(m_strScript, chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(m_strScript, chrDrive, chrDir, chrFile, chrExt);
 		m_strScript = lstrcat(chrDrive, chrDir) + m_strComboSF;
 	}else{
 		m_strScript = m_strComboSF;
@@ -625,10 +689,10 @@ void CScriptoriumDlg::OnKillfocusEditIn()
 	// 入力ﾌｧｲﾙのｴﾃﾞｨｯﾄﾎﾞｯｸｽからﾌｫｰｶｽが外れたら
 	UpdateData();
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-	_splitpath(m_strEditIN, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(m_strEditIN, chrDrive, chrDir, chrFile, chrExt);
 	CString strDir(lstrcat(chrDrive, chrDir));
 	if ( strDir.IsEmpty() ){	// 入力されたﾌｧｲﾙ名にﾊﾟｽ情報がないとき
-		_splitpath(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(m_strInFileName, chrDrive, chrDir, chrFile, chrExt);
 		m_strInFileName = lstrcat(chrDrive, chrDir) + m_strEditIN;
 	}else{
 		m_strInFileName = m_strEditIN;
@@ -641,10 +705,10 @@ void CScriptoriumDlg::OnKillfocusEditOut()
 	// 出力ﾌｧｲﾙのｴﾃﾞｨｯﾄﾎﾞｯｸｽからﾌｫｰｶｽが外れたら
 	UpdateData();
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-	_splitpath(m_strEditOUT, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(m_strEditOUT, chrDrive, chrDir, chrFile, chrExt);
 	CString strDir(lstrcat(chrDrive, chrDir));
 	if ( strDir.IsEmpty() ){
-		_splitpath(m_strOutFileName, chrDrive, chrDir, chrFile, chrExt);
+		_splitpath_s(m_strOutFileName, chrDrive, chrDir, chrFile, chrExt);
 		m_strOutFileName = lstrcat(chrDrive, chrDir) + m_strEditOUT;
 	}else{
 		m_strOutFileName = m_strEditOUT;
@@ -658,7 +722,7 @@ void CScriptoriumDlg::OnKillfocusEditOut()
 CString FileReference(const CString& strInFile, BOOL bRead, UINT nFilterID)
 {
 	char chrDrive[_MAX_PATH], chrDir[_MAX_PATH], chrFile[_MAX_PATH], chrExt[_MAX_PATH];
-	_splitpath(strInFile, chrDrive, chrDir, chrFile, chrExt);
+	_splitpath_s(strInFile, chrDrive, chrDir, chrFile, chrExt);
 	CString strFile(lstrcat(chrFile, chrExt)),
 			strPath(lstrcat(chrDrive, chrDir)), strResult, strFilter, strAllFilter, strDefFilter;
 
