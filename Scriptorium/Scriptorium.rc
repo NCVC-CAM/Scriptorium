@@ -218,7 +218,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_NCD_FILTER          "ncd\nNCD File(*.ncd)|*.ncd|Text File(*.txt)|*.txt"
-    IDS_SCRIPT_FILTER       "pl\nScript File(*.pl;*py)|*.pl;*.py"
+    IDS_SCRIPT_FILTER       "\nScript File(*.pl;*py)|*.pl;*.py"
     IDS_ALL_FILTER          "|‚·‚×‚Ä‚Ìƒtƒ@ƒCƒ‹(*.*)|*.*||"
 END
 
