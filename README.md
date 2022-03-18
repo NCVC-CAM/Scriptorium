@@ -1,8 +1,8 @@
 ## Name
-Scriptorium Version 3.0.0
+Scriptorium Version 3.1.0
 
 ## Register Name
-Scriptorium300.zip
+Scriptorium.zip
 
 ## Operating Environment
 Windows11 Home
