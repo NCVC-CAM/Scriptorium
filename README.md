@@ -1,8 +1,8 @@
 ## Name
-Scriptorium Version 3.1.0
+Scriptorium Version 3.1.1
 
 ## Register Name
-Scriptorium.zip
+Scriptorium311.zip
 
 ## Operating Environment
 Windows11 Home
@@ -11,7 +11,7 @@ Windows11 Home
 Microsoft Visual Studio Professional/Community 2022 
 
 ## Author
-Yoshiro NOSE,Kaichiro Kageyama / NIT, Maizuru College (KOSEN)
+Yoshiro NOSE, Kaichiro Kageyama / NIT(KOSEN), Maizuru College
 
 ## License
 "Scriptorium" is under [BSD license (3-clause BSD License)] 
