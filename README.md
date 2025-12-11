@@ -8,7 +8,7 @@ Scriptorium311.zip
 Windows11 Home
 
 ## Usage
-Microsoft Visual Studio Professional/Community 2026 
+Visual Studio 2026 Solution  
 
 ## Author
 Yoshiro NOSE, Kaichiro Kageyama / NIT(KOSEN), Maizuru College
